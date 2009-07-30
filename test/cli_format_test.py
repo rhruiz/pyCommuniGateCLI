@@ -98,7 +98,15 @@ class CliFormatTestCase(unittest.TestCase):
         data = self.cli.parseWords('{Name=Unit;LastName="Test da Silva";}')
         self.assertEquals({'Name': 'Unit', 'LastName': 'Test da Silva'}, data)
 
+    def test_parsing_ip(self):
+        data = self.cli.parseWords('#I[10.0.44.55]')
+        self.assertEquals('10.0.44.55', data)
+
+    def test_parsing_ip_with_port(self):
+        data = self.cli.parseWords('#I[10.0.44.55]:25')
+        self.assertEquals(('10.0.44.55', 25), data)
+
     def test_parsing_nested_dicts(self):
         expected = datetime.datetime(2009, 10, 22, 15, 24, 45)
-        data = self.cli.parseWords('{ServiceClasses={Guests={Changed=#T22-10-2009_15:24:45;Folders=(INBOX, "Sent Items");};Staff={Name="name \\"nested\\" string";MaxAccounts=#20;};};}')
-        self.assertEquals({'ServiceClasses': {'Guests': {'Changed': expected, 'Folders': ['INBOX', 'Sent Items']}, 'Staff': {'Name': 'name "nested" string', 'MaxAccounts': 20}}}, data)
+        data = self.cli.parseWords('{ServiceClasses={Guests={Changed=#T22-10-2009_15:24:45;Folders=(INBOX, "Sent Items");Source=#I[127.127.127.127];};Staff={Source=#I[127.0.0.1]:25;Name="name \\"nested\\" string";MaxAccounts=#20;};};}')
+        self.assertEquals({'ServiceClasses': {'Guests': {'Changed': expected, 'Folders': ['INBOX', 'Sent Items'], 'Source': '127.127.127.127'}, 'Staff': {'Source': ('127.0.0.1', 25), 'Name': 'name "nested" string', 'MaxAccounts': 20}}}, data)

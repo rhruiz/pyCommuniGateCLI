@@ -244,6 +244,32 @@ class CLI:
         while (self._span < self._len) and r.search(self._data[self._span:self._span+1]):
             self._span += 1
             
+    def readIp(self):
+        ip = ''
+        port = ''
+        ipRead = False
+        while (self._span < self._len):
+            ch = self._data[self._span]
+            if not ipRead:
+                if (ch == ']'):
+                    ipRead = True
+                else:
+                    ip += ch
+            else:
+                if re.compile(r'(?:\:|\d)').match(ch) == None:
+                    break
+                elif ch != ':':
+                    port += ch
+            
+            self._span += 1
+
+        if port and len(port) > 0: 
+            return (ip, int(port))
+        else:
+            return ip
+
+            
+    
     def readTime(self):
         if len(self._data) - self._span < 11 or self._data[self._span+11] == '_':
             result = datetime.strptime(self._data[self._span:self._span+10], '%d-%m-%Y')
@@ -325,13 +351,19 @@ class CLI:
         self.skipSpaces()
         ch = self._data[self._span]
         next_ch = self._data[self._span+1]
-        if ch == '#' and next_ch != 'T':
-            self._span += 1
-            return self.readNumeric() 
-            
+        
+        if ch == '#' and next_ch == 'I':
+            self._span += 3
+            return self.readIp()
+        
         elif ch == '#' and next_ch == 'T':
             self._span += 2
             return self.readTime()
+            
+        if ch == '#' and next_ch != 'T':
+            self._span += 1
+            return self.readNumeric() 
+
         
         elif ch == '{':
             self._span += 1
