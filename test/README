@@ -1,0 +1,14 @@
+Python library to interact with CommuniGate Pro CLI
+
+- initially a port of the official CLI.pm perl module
+- added support for numeric (int, float) values
+- added support for datetime & date objects
+
+TODO:
+    - booleans (YES/NO)
+    - increase test cases to cover python object to CGP conversion
+    - Find and fix out of bounds scenarios
+
+Report bugs/contact info:
+
+Ricardo Hermida Ruiz <ricardo dot ruiz at locaweb dot com dot br>
