@@ -34,9 +34,7 @@ class CliForTest(CLI):
         self._currentCGateCommand = cmd
 
     def parseResponse(self):
-        pass
-
-	        
+        pass	        
 
 class CliMethodMissingTest(unittest.TestCase):
     def setUp(self):
@@ -45,6 +43,14 @@ class CliMethodMissingTest(unittest.TestCase):
     def tearDown(self):
         self.cli = None
         
-    def testParsingASimpleCommand(self):
+    def test_parsing_a_simple_command(self):
         self.cli.listdomains()
         self.assertEquals("LISTDOMAINS", self.cli._currentCGateCommand)
+        
+    def test_parsing_a_single_argument_command(self):
+        self.cli.get_account_settings('root@domain.com')
+        self.assertEquals('GETACCOUNTSETTINGS "root@domain.com"', self.cli._currentCGateCommand)  
+    
+    def test_command_without_underscore(self):
+        self.cli.getaccountsettings('root@domain.com')
+        self.assertEquals('GETACCOUNTSETTINGS "root@domain.com"', self.cli._currentCGateCommand)

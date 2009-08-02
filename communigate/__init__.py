@@ -5,7 +5,7 @@ import socket
 import re
 import md5
 import string
-from datetime import datetime
+from datetime import datetime, date
 
 class CgDataException(Exception):
 	def __init__(self, buffer, occurred_at, expecting = ''):
@@ -178,54 +178,54 @@ class CLI:
 	        return self.isSuccess()
 	    else:
 	        self.setStrangeError(line, CLI.CLI_CODE_STRANGE)
-	        
-	def convertOutput(self, data, translate):
-	    if data == None:
-	        return '#NULL#'
-	        
-	    elif not data:
-	        return ''
-	    
-	    elif isinstance(data, list):
-	        out = '('
-	        first = True
-	        for value in data:
-	            if not first:
-	                out += ','
-	            else:
-	                first = False
-	            out += self.convertOutput(value, self._translateStrings)
-	        out += ')'
-	        return out
+	        	        
+    def convertOutput(self, data, translate):
+        if data == None:
+            return '#NULL#'
+    
+        elif not data:
+            return ''
 
-	    elif isinstance(data, dict):
-	        out = '{'
-	        for k in data.keys():
-	            out += self.convertOutput(k, self._translateStrings) + '='
-	            out += self.convertOutput(data[k], self._translateStrings) + ';'
-	        
-	        out += '}'
-	        return out
-	    
-	    elif isinstance(data, int):
-	        return "#%d" % data	    
-	    
-	    elif isinstance(data, datetime):
-	        return data.strftime("%d-%m-%Y_%H:%M:%S")
-	    
-	    elif isinstance(data, date):
-	        return data.strftime("%d-%m-%Y_%H:%M:%S")
-	    
-	    else:
-	        matches = re.compile(r'[\W_]').search(data)
-	        if matches != None or data == '':
-	            if translate:
-	                data = re.compile(r'\\((?![enr\d]))').sub('\\\\' + matches.group(1), data)
-	                data = data.replace('\"', '\\\"')
-                    
+        elif isinstance(data, list):
+            out = '('
+            first = True
+            for value in data:
+                if not first:
+                    out += ','
+                else:
+                    first = False
+                out += self.convertOutput(value, self._translateStrings)
+            out += ')'
+            return out
+
+        elif isinstance(data, dict):
+            out = '{'
+            for k in data.keys():
+                out += self.convertOutput(k, self._translateStrings) + '='
+                out += self.convertOutput(data[k], self._translateStrings) + ';'
+    
+            out += '}'
+            return out
+
+        elif isinstance(data, int):
+            return "#%d" % data	    
+
+        elif isinstance(data, datetime):
+            return data.strftime("%d-%m-%Y_%H:%M:%S")
+
+        elif isinstance(data, date):
+            return data.strftime("%d-%m-%Y_%H:%M:%S")
+
+        else:
+            matches = re.compile(r'[\W_]').search(data)
+            if matches != None or data == '':
+                if translate:
+                    data = re.compile(r'\\((?![enr\d]))').sub('\\\\' + matches.group(1), data)
+                    data = data.replace('\"', '\\\"')
+            
                 for i in range(0x00, 0x1F):
-                    data = data.replace(chr(i), "\\" + ((3 - len(ord(i))) * '0') + ord(i))
-                    
+                    data = data.replace(chr(i), "\\" + str(int(i)))
+            
                 data = data.replace(chr(0x7F), "\\127")
                 return self.quoteString(data)
     
