@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import unittest
@@ -52,7 +53,7 @@ class CliForTest(CLI):
 	    self._currentCGateCommand = command
 	        
     
-class CliFormatTestCase(unittest.TestCase):
+class CliParseCGPTest(unittest.TestCase):
 
     def setUp(self):
         self.cli = CliForTest()
