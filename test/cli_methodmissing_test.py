@@ -47,6 +47,10 @@ class CliMethodMissingTest(unittest.TestCase):
         self.cli.listdomains()
         self.assertEquals("LISTDOMAINS", self.cli._currentCGateCommand)
         
+    def test_kwargs_convertion(self):
+        self.cli.set_account_password('root@domain.com', Password='secret')
+        self.assertEquals('SETACCOUNTPASSWORD "root@domain.com" PASSWORD secret', self.cli._currentCGateCommand)
+    
     def test_parsing_a_single_argument_command(self):
         self.cli.get_account_settings('root@domain.com')
         self.assertEquals('GETACCOUNTSETTINGS "root@domain.com"', self.cli._currentCGateCommand)  

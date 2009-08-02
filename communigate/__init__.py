@@ -50,6 +50,7 @@ class CLI:
             cmd.append(self.printWords(arg))
         
         for key in kwargs.keys():
+            cmd.append(key.upper())
             cmd.append(self.printWords(kwargs[key]))
         
         self.send(' '.join(cmd))
@@ -207,14 +208,14 @@ class CLI:
             out += '}'
             return out
 
-        elif isinstance(data, int):
-            return "#%d" % data	    
+        elif isinstance(data, int) or isinstance(data, float):
+            return "#%s" % str(data)
 
         elif isinstance(data, datetime):
-            return data.strftime("%d-%m-%Y_%H:%M:%S")
+            return data.strftime("#T%d-%m-%Y_%H:%M:%S")
 
         elif isinstance(data, date):
-            return data.strftime("%d-%m-%Y_%H:%M:%S")
+            return data.strftime("#T%d-%m-%Y")
 
         else:
             matches = re.compile(r'[\W_]').search(data)
@@ -228,7 +229,9 @@ class CLI:
             
                 data = data.replace(chr(0x7F), "\\127")
                 return self.quoteString(data)
-    
+            else:
+                return data
+                
     def printWords(self, data):
         return self.convertOutput(data, self._translateStrings)
         
@@ -273,7 +276,7 @@ class CLI:
     
     def readTime(self):
         if len(self._data) - self._span < 11 or self._data[self._span+11] == '_':
-            result = datetime.strptime(self._data[self._span:self._span+10], '%d-%m-%Y')
+            result = datetime.strptime(self._data[self._span:self._span+10], '%d-%m-%Y').date()
             self._span += 10
         else:
             result = datetime.strptime(self._data[self._span:self._span+19], '%d-%m-%Y_%H:%M:%S')

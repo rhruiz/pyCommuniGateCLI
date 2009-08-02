@@ -64,7 +64,7 @@ class CliParseCGPTest(unittest.TestCase):
         self.assertEquals(-12.34, data)
     
     def test_parsing_date(self):
-        expected = datetime.datetime(2009, 10, 22)
+        expected = datetime.date(2009, 10, 22)
         data = self.cli.parseWords('#T22-10-2009')
         self.assertEquals(expected, data)
     
