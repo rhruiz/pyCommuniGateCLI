@@ -45,14 +45,14 @@ class CLI:
     
     def __methodmissing__(self, *args, **kwargs):
         cmd = []
-        cmd.append(self.__missing_method_name.replace('_', ''))
+        cmd.append(self.__missing_method_name.upper().replace('_', ''))
         for arg in args:
             cmd.append(self.printWords(arg))
         
         for key in kwargs.keys():
             cmd.append(self.printWords(kwargs[key]))
         
-        self.send(cmd)
+        self.send(' '.join(cmd))
         self.parseResponse()
         
         if not self.isSuccess():

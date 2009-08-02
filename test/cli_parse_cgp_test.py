@@ -29,28 +29,6 @@ class CliForTest(CLI):
         self._connected = True
         self.response = ''
     
-    def setResponse(response):
-        self.response = response
-        
-    def parseResponse(self):
-        line = self.response
-        cleanLine = string.strip(line)
-
-        matches = re.compile(r'^(\d+)\s(.*)$').search(line)
-        if matches != None:
-            self._errorCode = matches.group(0)
-
-            if matches.group(1) == CLI.CLI_CODE_OK_INLINE:
-                self._inlineResponse = matches.group(2)
-                self._errorMessage = 'OK'
-            else:
-                self._errorMessage = string.rstrip(matches.group(2))
-                return self.isSuccess()
-        else:
-            self.setStrangeError(line, CLI.CLI_CODE_STRANGE)
-	
-	def send(self, cmd, checkLogged = True):
-	    self._currentCGateCommand = command
 	        
     
 class CliParseCGPTest(unittest.TestCase):
