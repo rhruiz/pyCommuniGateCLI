@@ -1,10 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
 import socket
 import re
-import md5
+import hashlib
 import string
+import sys
 from datetime import datetime, date
 
 class CgDataException(Exception):
@@ -54,11 +55,14 @@ class CLI:
             cmd.append(self.printWords(kwargs[key]))
         
         self.send(' '.join(cmd))
-        self.parseResponse()
         
+               
         if not self.isSuccess():
             raise CgGeneralException(self._errorMessage)
-        
+
+        elif self.parseResponse():
+            return self.parseWords(self.getWords())
+
     
     def __getattr__(self, name):
         self.__missing_method_name = name # Could also be a property
@@ -98,31 +102,31 @@ class CLI:
             
         try:
         	self._sp = socket.socket()
-        	self._sp.connect((self._params["hostname"], self._params["port"]))
+        	self._sp.connect((self._peerAddress, self._peerPort))
         except socket.error, msg:
-        	raise CgGeneralException("Unable to connect to host %s on port %d: %s" % (self._params["hostname"], self._params["port"], msg))
+        	raise CgGeneralException("Unable to connect to host %s on port %d: %s" % (self._peerAddress, self._peerPort, msg))
 
         response = self._sp.recv(4096)
-        exp = re.compile(r'(\<.*\@*\>)')
-        if (exp.search(response) == None):
+        exp = re.compile(r'(\<.*\@.*\>)')
+        matches = exp.search(response)
+        if (matches == None):
             raise ValueError("No banner from the server")
         else:
-        	self._bannerCode = exp.group(0)
+        	self._bannerCode = matches.group(1)
 
         CLI.__connectionCounter += 1
         self._connected = True
     
     def login(self):
-        m = md5.new()
-        m.update(self._banner_code + self._params["password"])
+        m = hashlib.md5()
+        m.update(self._bannerCode + self._password)
         hash = m.hexdigest()
         command = "APOP %s %s" % (self._login, hash)
         self.send(command, False)
         self.parseResponse()
-        
+
         if not self.isSuccess():
             raise CgGeneralException(self._errorMessage)
-            
             
         self._logged = True
         self.inline()
@@ -135,8 +139,7 @@ class CLI:
             self.login()
             
         self._currentCGateCommand = command
-        self._sp.send("%s\n" % command)
-        
+        self._sp.send("%s\r\n" % command)
     
     def getErrorCode(self):
         return self._errorCode
@@ -162,23 +165,22 @@ class CLI:
         self._errorMessage = string.rstrip(line)
         return False
         
-	def parseResponse(self):
-	    line = self._sp.recv(4096)
-	    cleanLine = string.strip(line)
-	    
-	    matches = re.compile(r'^(\d+)\s(.*)$').search(line)
-	    if matches != None:
-	        self._errorCode = matches.group(0)
-	        
-	        if matches.group(1) == CLI.CLI_CODE_OK_INLINE:
-	            self._inlineResponse = matches.group(2)
-	            self._errorMessage = 'OK'
-	        else:
-	            self._errorMessage = string.rstrip(matches.group(2))
+    def parseResponse(self):
+        line = self._sp.recv(4096)
+        cleanLine = string.strip(line)
+	   
+        matches = re.compile(r'^(\d+)\s(.*)$').search(line)
+        if matches != None:
+            self._errorCode = int(matches.group(1))
+            if  self._errorCode == CLI.CLI_CODE_OK_INLINE or self._errorCode == CLI.CLI_CODE_OK:
+                self._inlineResponse = matches.group(2)
+                self._errorMessage = 'OK'
+            else:
+                self._errorMessage = string.rstrip(matches.group(2))
 	            
-	        return self.isSuccess()
-	    else:
-	        self.setStrangeError(line, CLI.CLI_CODE_STRANGE)
+            return self.isSuccess()
+        else:
+            self.setStrangeError(line, CLI.CLI_CODE_STRANGE)
 	        	        
     def convertOutput(self, data, translate):
         if data == None:
